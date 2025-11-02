@@ -1,0 +1,254 @@
+        config/db.js
+
+const mongoose = require('mongoose');
+
+module.exports = function connectDB(uri) {
+  return mongoose.connect(uri)
+    .then(() => console.log('MongoDB connected'))
+    .catch(err => console.error('MongoDB connection error:', err));
+};
+
+
+        models/user.js
+
+const mongoose = require('mongoose');
+const { Schema } = mongoose;
+
+const UserSchema = new Schema({
+  username: { type: String, required: true, unique: true }
+}, { timestamps: true });
+
+module.exports = mongoose.model('User', UserSchema);
+
+
+        model/message.js
+
+const mongoose = require("mongoose");
+const { Schema } = mongoose;
+
+const MessageSchema = new Schema(
+  {
+    conversationId: { type: Schema.Types.ObjectId, ref: "Conversation", required: true },
+    sender: { type: String, required: true }, // username
+    text: { type: String, required: true }
+  },
+  { timestamps: true }
+);
+
+module.exports = mongoose.model("Message", MessageSchema);
+
+
+
+        models/Conversation.js
+
+const mongoose = require("mongoose");
+
+const ConversationSchema = new mongoose.Schema(
+  {
+    participants: [
+      { type: String, required: true } // usernames       
+    ]
+  },
+  { timestamps: true }
+);
+
+module.exports = mongoose.model("Conversation", ConversationSchema);
+
+
+        routes/user.js
+
+const express = require('express');
+const router = express.Router();
+const ctrl = require('../controllers/userController');
+
+router.post('/', ctrl.createUser);
+router.get('/', ctrl.listUsers);
+
+module.exports = router;
+
+        routes/message.js
+
+// routes/messages.js
+const express = require("express");
+const router = express.Router();
+const Message = require("../models/Message");
+const Conversation = require("../models/Conversation");
+const User = require("../models/User");
+
+// Send a message
+router.post("/send", async (req, res) => {
+  const { sender, receiver, text } = req.body;
+
+  try {
+    // Find conversation between the users
+    let conversation = await Conversation.findOne({
+      participants: { $all: [sender, receiver] },
+    });
+
+    // If no conversation exists, create one
+    if (!conversation) {
+      conversation = await Conversation.create({
+        participants: [sender, receiver],
+      });
+    }
+
+    // Create the message
+    const message = await Message.create({
+      conversationId: conversation._id,
+      sender,
+      text,
+    });
+
+    res.status(201).json(message);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Get all messages of a conversation
+router.get("/:conversationId", async (req, res) => {
+  try {
+    const messages = await Message.find({
+      conversationId: req.params.conversationId,
+    }).populate("sender", "username");
+    res.json(messages);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+module.exports = router;
+
+
+        routes/connection.js
+
+const express = require('express');
+const router = express.Router();
+const ctrl = require('../controllers/conversationController');
+
+router.post('/start', ctrl.startConversation);
+router.get('/:username', ctrl.getUserConversations);
+
+module.exports = router;
+
+
+
+        controllers/conversationController.js
+
+const Conversation = require('../models/Conversation');
+
+exports.startConversation = async (req, res) => {
+  const { participants } = req.body; // array of usernames
+  if (!participants || participants.length < 2) {
+    return res.status(400).json({ error: "At least two participants are required" });
+  }
+
+  try {
+    let conversation = await Conversation.findOne({
+      participants: { $all: participants }
+    });
+
+    if (!conversation) {
+      conversation = await Conversation.create({ participants });
+    }
+
+    res.status(200).json(conversation);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.getUserConversations = async (req, res) => {
+  const { username } = req.params;
+  try {
+    const conversations = await Conversation.find({
+      participants: { $in: [username] }
+    });
+    res.json(conversations);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+
+        controllers/messageController.js
+
+const Message = require('../models/Message');
+
+exports.sendMessage = async (req, res) => {
+  const { conversationId, sender, text } = req.body;
+  if (!conversationId || !sender || !text) {
+    return res.status(400).json({ error: "conversationId, sender, and text are required" });
+  }
+
+  try {
+    const message = await Message.create({ conversationId, sender, text });
+    res.status(201).json(message);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.getMessages = async (req, res) => {
+  const { conversationId } = req.params;
+  try {
+    const messages = await Message.find({ conversationId });
+    res.json(messages);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+
+        controller/userController.js
+
+
+const User = require('../models/User');
+
+exports.createUser = async (req, res) => {
+  try {
+    const user = new User(req.body);
+    await user.save();
+    res.status(201).json(user);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+};
+
+exports.listUsers = async (req, res) => {
+  const users = await User.find().sort({ createdAt: -1 });
+  res.json(users);
+};
+
+
+            .env
+
+
+PORT=4000
+MONGO_URI=mongodb+srv://main-BDcallingAccademy:01612092344@bdcallingaccademy.q20nqrt.mongodb.net/chatDB
+
+
+            server.js
+
+require('dotenv').config();
+const express = require('express');
+const connectDB = require('./config/db');
+
+const userRoutes = require('./routes/user');
+const conversationRoutes = require('./routes/conversation');
+const messageRoutes = require('./routes/message');
+
+const app = express();
+app.use(express.json());
+app.use(require('cors')());
+
+// Routes
+app.use('/api/users', userRoutes);
+app.use('/api/conversations', conversationRoutes);
+app.use('/api/messages', messageRoutes);
+
+const PORT = process.env.PORT || 4000;
+
+connectDB(process.env.MONGO_URI)
+  .then(() => app.listen(PORT, () => console.log(`Server running on port ${PORT}`)))
+  .catch(err => console.error(err));
