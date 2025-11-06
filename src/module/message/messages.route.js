@@ -1,9 +1,9 @@
 // routes/messages.js
 const express = require("express");
 const router = express.Router();
-const Message = require("../models/Message");
-const Conversation = require("../models/Conversation");
-const User = require("../models/User");
+const Message = require("./Message.model");
+const Conversation = require("../conversation/Conversation.model");
+const User = require("../user/User.model");
 
 // Send a message
 router.post("/send", async (req, res) => {

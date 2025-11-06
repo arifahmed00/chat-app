@@ -1,22 +1,8 @@
-// const User = require('../models/User');
 
-// exports.createUser = async (req, res) => {
-//   try {
-//     const user = new User(req.body);
-//     await user.save();
-//     res.status(201).json(user);
-//   } catch (err) {
-//     res.status(400).json({ error: err.message });
-//   }
-// };
-
-// exports.listUsers = async (req, res) => {
-//   const users = await User.find().sort({ createdAt: -1 });
-//   res.json(users);
-// };
-const User = require('../models/User');
+const User = require('../user/User.model');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
+const { ACCESS_TOKEN_EXPIRES_IN,JWT_SECRET } = require('../config/envConfig');
 
 // REGISTER
 exports.register = async (req, res) => {
@@ -32,27 +18,28 @@ exports.register = async (req, res) => {
 // LOGIN
 exports.login = async (req, res) => {
   const { username, password } = req.body;
-  try {
+
     const user = await User.findOne({ username });
     if (!user) return res.status(404).json({ error: 'User not found' });
 
     const valid = await bcrypt.compare(password, user.password);
     if (!valid) return res.status(400).json({ error: 'Invalid password' });
 
-    const token = jwt.sign(
+    const accessToken = jwt.sign(
       { id: user._id, username: user.username, role: user.role },
-      process.env.JWT_SECRET,
-      { expiresIn: '1d' }
+      JWT_SECRET,
+      { expiresIn: ACCESS_TOKEN_EXPIRES_IN }
     );
+    const refreshToken = jwt.sign(
+    { userId: user._id },
+    JWT_SECRET,
+    { expiresIn: REFRESH_TOKEN_EXPIRES_IN }
+    )
+    user.refreshToken = refreshToken;
+    await user.save()
+    res.json({ accessToken,refreshToken });
+}
 
-    res.json({ token });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
-
-// LIST USERS (only admin)
-exports.listUsers = async (req, res) => {
-  const users = await User.find().sort({ createdAt: -1 });
-  res.json(users);
+exports.getAllUser = async () => {
+  return await User.find();
 };

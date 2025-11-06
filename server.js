@@ -1,22 +1,15 @@
-require('dotenv').config();
+const dotenv = require('dotenv');
 const express = require('express');
-const connectDB = require('./config/db');
+const connectDB = require('./src/config/db');
+const appRoutes = require('./app');
+const { PORT } = require('./src/config/envConfig');
 
-const userRoutes = require('./routes/users');
-const conversationRoutes = require('./routes/conversations');
-const messageRoutes = require('./routes/messages');
-
+dotenv.config();
 const app = express();
+
 app.use(express.json());
 app.use(require('cors')());
+connectDB()
+app.use('/api',appRoutes)
 
-// Routes
-app.use('/api/users', userRoutes);
-app.use('/api/conversations', conversationRoutes);
-app.use('/api/messages', messageRoutes);
-
-const PORT = process.env.PORT || 4000;
-
-connectDB(process.env.MONGO_URI)
-  .then(() => app.listen(PORT, () => console.log(`Server running on port ${PORT}`)))
-  .catch(err => console.error(err));
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

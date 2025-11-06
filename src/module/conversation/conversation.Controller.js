@@ -1,8 +1,8 @@
-const Conversation = require('../models/Conversation');
+const Conversation = require('../conversation/Conversation.model');
 
 exports.startConversation = async (req, res) => {
   const { participants } = req.body; // array of usernames
-  if (!participants || participants.length < 2) {
+  if (participants.length < 2) {
     return res.status(400).json({ error: "At least two participants are required" });
   }
 
