@@ -1,0 +1,22 @@
+src/
+    config/
+        db.js
+        envConfig.js
+    middlewere/
+        auth.js
+    module/
+        conversation/
+            conversation.Controller.js
+            conversation.model.js 
+            conversation.route.js
+        message/
+            message.Controller.js
+            message.model.js
+            message.route.js
+        user/
+            user.Controller.js
+            user.model.js
+            user.route.js
+.env
+app.js
+server.js

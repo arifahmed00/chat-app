@@ -1,7 +1,7 @@
 
 const express = require('express');
 const router = express.Router();
-const {register,login,getAllUser} = require('../user/user.Controller');
+const {register,login,getAllUser} = require('./user.Controller');
 const { chackUserToken, chackAdminToken} = require('../../middleware/auth');
 
 router.post('/register', register);

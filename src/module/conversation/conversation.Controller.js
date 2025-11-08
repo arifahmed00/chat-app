@@ -1,4 +1,4 @@
-const Conversation = require('../conversation/Conversation.model');
+const Conversation = require('./Conversation.model');
 
 exports.startConversation = async (req, res) => {
   const { participants } = req.body; // array of usernames

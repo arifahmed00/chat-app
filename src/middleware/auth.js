@@ -1,8 +1,8 @@
 const jwt = require('jsonwebtoken');
-const {JWT_SECRET} = require("../src/config/envConfig")
+const {JWT_SECRET} = require("../config/envConfig")
 
 exports.chackUserToken = (req, res, next) => {
-  const authHeader = req.headers[authorization] || req.headers[authorization];
+  const authHeader = req.headers['authorization'] || req.headers['Authorization'];
   if (!authHeader) return res.status(401).json({ error: 'Access token missing or invalid' });
 
   const token = authHeader.split(' ')[1];

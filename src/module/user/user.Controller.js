@@ -1,8 +1,7 @@
-
-const User = require('../user/User.model');
+const User = require('./User.model');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-const { ACCESS_TOKEN_EXPIRES_IN,JWT_SECRET } = require('../config/envConfig');
+const { ACCESS_TOKEN_EXPIRES_IN,JWT_SECRET,REFRESH_TOKEN_EXPIRES_IN } = require('../../config/envConfig');
 
 // REGISTER
 exports.register = async (req, res) => {
