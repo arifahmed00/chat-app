@@ -1,10 +1,10 @@
 const jwt = require('jsonwebtoken');
 const {JWT_SECRET}= require('../config/envConfig');
 
-const chackUserToken = async (req,res,next) =>{
+const checkUserToken = async (req,res,next) =>{
   const authHeader = req.headers['authorization'] || req.headers['Authorization'];
 
-  if (!authHeader || authHeader.startsWith('Bearer')) {
+  if (!authHeader || !authHeader.startsWith('Bearer')) {
     return res.status(401).json({Message: 'Access token is missing of invalid format'})
   }
   const token = authHeader.split(' ')[1];
@@ -12,7 +12,7 @@ const chackUserToken = async (req,res,next) =>{
   try{
     const decoded = jwt.verify(token, JWT_SECRET);
 
-    res.user = decoded;
+    req.user = decoded;
     next();
   }catch(err){
     return res.status(403).json({message:'Invalid or expires token '});
@@ -20,7 +20,7 @@ const chackUserToken = async (req,res,next) =>{
 };
 
 const checkAdminToken = async (req,res,next)=>{
-  const authHeader = req.headers['authorizaion'] || req.headers['Authorization'];
+  const authHeader = req.headers['authorization'] || req.headers['Authorization'];
 
   if (!authHeader || !authHeader.startsWith('Bearer')){
     return res.status(401).json({message: 'accesstoken missing or invalid format'});
@@ -41,4 +41,4 @@ const checkAdminToken = async (req,res,next)=>{
   }
 };
 
-module.exports = {chackUserToken,checkAdminToken}
+module.exports = {checkUserToken,checkAdminToken}

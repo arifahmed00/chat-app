@@ -85,19 +85,15 @@ server.js
 
 **Ready to push data to your MongoDB collections!** 🚀
 
-
 postman
-
-| Module / Endpoint               | Method | Body / Params                                                     | Headers                               | Protected? | Notes                                                     |
-| ------------------------------- | ------ | ----------------------------------------------------------------- | ------------------------------------- | ---------- | --------------------------------------------------------- |
-| **User**                        |        |                                                                   |                                       |            |                                                           |
-| `/api/users/register`           | POST   | `{ "username": "prottoy", "password": "1234", "role": "user" }`   | None                                  | ❌         | Registers new user                                        |
-| `/api/users/login`              | POST   | `{ "username": "prottoy", "password": "1234" }`                   | None                                  | ❌         | Returns `accessToken` & `refreshToken`                    |
-| `/api/users/get-uers`           | GET    | None                                                              | `Authorization: Bearer <accessToken>` | ✔          | Admin only; `chackUserToken + chackAdminToken` middleware |
-| **Conversation**                |        |                                                                   |                                       |             |                                                           |
-| `/api/conversations/start`      | POST   | `{ "participants": ["user1","user2"] }`                           | Optional auth                         | ❌ / ✔     | Creates or returns conversation                           |
-| `/api/conversations/:username`  | GET    | {"username":"name"}                                               | Optional auth                         | ❌ / ✔     | Returns all conversations of username                     |
-| **Message**                     |        |                                                                   |                                       |             |                                                           |
-| `/api/messages/send`            | POST   | `{ "conversationId": "...", "sender": "user1", "text": "Hello" }` | Optional auth                         | ❌ / ✔     | Sends a message                                           |
-| `/api/messages/:conversationId` | GET    | `{"conversationId": "conversationid"}                             | Optional auth                         | ❌ / ✔     | Returns all messages in a conversation                    |
-
+| **Module**       | **Endpoint**                   | **Method** | **Body / Params**                                                        | **Auth**    | **Description**                            |
+| ---------------- | ------------------------------ | ---------- | ------------------------------------------------------------------------ | ----------- | ------------------------------------------ |
+| **User**         | `/api/user/create`             | POST       | `{ "username": "string", "password": "string" }`                         | None        | Create a new user                          |
+| **User**         | `/api/user/login`              | POST       | `{ "username": "string", "password": "string" }`                         | None        | Login user, returns access & refresh token |
+| **User**         | `/api/user/refresh-token`      | POST       | `{ "refreshToken": "string" }`                                           | None        | Get new access token using refresh token   |
+| **User**         | `/api/user/get-users`          | GET        | None                                                                     | Admin token | Get all users (Admin only)                 |
+| **User**         | `/api/user/me`                 | GET        | None                                                                     | User token  | Get current logged-in user info            |
+| **Conversation** | `/api/conversations/start`     | POST       | `{ "participants": ["user1", "user2"] }`                                 | None        | Start a new conversation                   |
+| **Conversation** | `/api/conversations/:username` | GET        | `username` in URL                                                        | None        | Get all conversations for a user           |
+| **Message**      | `/api/messages/send`           | POST       | `{ "conversationId": "string", "sender": "username", "text": "string" }` | None        | Send a message in a conversation           |
+| **Message**      | `/api/messages/get-message`    | GET        | `{ "conversationId": "string" }`                                         | None        | Get all messages of a conversation         |

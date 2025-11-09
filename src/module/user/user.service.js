@@ -11,7 +11,7 @@ exports.createUserService = async({username,password})=>{
 };
 
 exports.loginUserService = async ({username,password})=>{
-    const user = await User.find({username}).select('+password');
+    const user = await User.findOne({username}).select('+password');
     if (!user) throw new Error('User not found');
 
     const isMatch = await bcrypt.compare(password,user.password);
@@ -20,13 +20,13 @@ exports.loginUserService = async ({username,password})=>{
     const accessToken = jwt.sign(
         {userID:user._id,role:user.role},
         JWT_SECRET,
-        {expiresin:ACCESS_TOKEN_EXPIRES_IN}
+        {expiresIn:ACCESS_TOKEN_EXPIRES_IN}
     );
 
     const refreshToken = jwt.sign(
         {userID:user._id},
         JWT_SECRET,
-        {expiresin: REFRESH_TOKEN_EXPIRES_IN}
+        {expiresIn: REFRESH_TOKEN_EXPIRES_IN}
     );
     user.refreshToken = refreshToken
     await user.save();
@@ -52,7 +52,7 @@ exports.refreshTokenService = async (refreshToken)=>{
     const newAccessToken= jwt.sign(
         {userID:user._id, role:user.role},
         JWT_SECRET,
-        {expiresin:ACCESS_TOKEN_EXPIRES_IN}
+        {expiresIn:ACCESS_TOKEN_EXPIRES_IN}
     );
     return newAccessToken;
-}
+};

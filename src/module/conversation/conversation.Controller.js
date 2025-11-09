@@ -15,7 +15,7 @@ exports.startConversation = async (req, res) => {
 
 exports.getUserConversations = async (req, res) => {
   try {
-    const { username } = req.body;
+    const username = req.params.username
     const conversations = await getUserConversationsService(username);
     res.status(200).json(conversations);
   } catch (error) {
