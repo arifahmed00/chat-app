@@ -22,7 +22,7 @@ exports.startConversation = async (req, res) => {
 };
 
 exports.getUserConversations = async (req, res) => {
-  const { username } = req.params;
+  const { username } = req.body;
   try {
     const conversations = await Conversation.find({
       participants: { $in: [username] }

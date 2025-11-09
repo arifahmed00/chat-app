@@ -15,7 +15,7 @@ exports.sendMessage = async (req, res) => {
 };
 
 exports.getMessages = async (req, res) => {
-  const { conversationId } = req.params;
+  const { conversationId } = req.body;
   try {
     const messages = await Message.find({ conversationId });
     res.json(messages);
@@ -23,3 +23,6 @@ exports.getMessages = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+
+
