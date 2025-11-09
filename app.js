@@ -6,8 +6,7 @@ const conversationRoutes = require('./src/module/conversation/conversations.rout
 const messageRoutes = require('./src/module/message/messages.route');
 
 
-// Routes
-router.use('/users', userRoutes);
+router.use('/user', userRoutes);
 router.use('/conversations', conversationRoutes);
 router.use('/messages', messageRoutes);
 

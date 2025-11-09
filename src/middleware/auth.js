@@ -1,34 +1,44 @@
 const jwt = require('jsonwebtoken');
-const {JWT_SECRET} = require("../config/envConfig")
+const {JWT_SECRET}= require('../config/envConfig');
 
-exports.chackUserToken = (req, res, next) => {
+const chackUserToken = async (req,res,next) =>{
   const authHeader = req.headers['authorization'] || req.headers['Authorization'];
-  if (!authHeader) return res.status(401).json({ error: 'Access token missing or invalid' });
 
+  if (!authHeader || authHeader.startsWith('Bearer')) {
+    return res.status(401).json({Message: 'Access token is missing of invalid format'})
+  }
   const token = authHeader.split(' ')[1];
-  try {
+
+  try{
     const decoded = jwt.verify(token, JWT_SECRET);
-    req.user = decoded; // { id, username, role }
+
+    res.user = decoded;
     next();
-  } catch {
-    res.status(401).json({ error: 'Invalid or expired token' });
+  }catch(err){
+    return res.status(403).json({message:'Invalid or expires token '});
   }
 };
 
-exports.chackAdminToken = async(req,res,next) =>{
-  const authHeader = req.headers['authorization'] || req.headers['Authorization'];
+const checkAdminToken = async (req,res,next)=>{
+  const authHeader = req.headers['authorizaion'] || req.headers['Authorization'];
 
-  if (!authHeader) return res.status(401).json({ error: 'Admin access token missing or invalid' });
-  const token = authHeader.split(' ')[1];
+  if (!authHeader || !authHeader.startsWith('Bearer')){
+    return res.status(401).json({message: 'accesstoken missing or invalid format'});
+  }
+
+  const token =authHeader.split(' ')[1];
+
   try{
-    const decoded = jwt.verify(token,JWT_SECRET)
-    if (decoded.role !='admin'){
-      return res.status(403).json({massage: "Access denied. Admins only."})
+    const decoded = jwt.verify(token, JWT_SECRET);
+
+    if(decoded.role != 'admin') {
+      return res.status(403).json({message:'Access denied. Admin only'})
     }
-    req.user = decoded
-    next()
+    req.user = decoded;
+    next();
+  }catch(err){
+    return res.status(403).json({message:'Invalid or expired token'})
   }
-  catch(error){
-    return res.status(403).json({  message: 'Invalid or expired token'})
-  }
-}
+};
+
+module.exports = {chackUserToken,checkAdminToken}

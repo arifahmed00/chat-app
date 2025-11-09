@@ -1,34 +1,24 @@
-const Conversation = require('./Conversation.model');
+const {
+  startConversationService,
+  getUserConversationsService,
+} = require('./conversation.service');
 
 exports.startConversation = async (req, res) => {
-  const { participants } = req.body; // array of usernames
-  if (participants.length < 2) {
-    return res.status(400).json({ error: "At least two participants are required" });
-  }
-
   try {
-    let conversation = await Conversation.findOne({
-      participants: { $all: participants }
-    });
-
-    if (!conversation) {
-      conversation = await Conversation.create({ participants });
-    }
-
+    const { participants } = req.body;
+    const conversation = await startConversationService(participants);
     res.status(200).json(conversation);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
   }
 };
 
 exports.getUserConversations = async (req, res) => {
-  const { username } = req.body;
   try {
-    const conversations = await Conversation.find({
-      participants: { $in: [username] }
-    });
-    res.json(conversations);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+    const { username } = req.body;
+    const conversations = await getUserConversationsService(username);
+    res.status(200).json(conversations);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 };

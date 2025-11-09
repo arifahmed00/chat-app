@@ -1,11 +1,17 @@
 
 const express = require('express');
 const router = express.Router();
-const {register,login,getAllUser} = require('./user.Controller');
+const {createUser,loginUser,getAllUser,getMe,refreshTokenUser} = require('./user.Controller');
 const { chackUserToken, chackAdminToken} = require('../../middleware/auth');
 
-router.post('/register', register);
-router.post('/login', login);
-router.get('/get-uers',chackUserToken, chackAdminToken,getAllUser);    //for admin
+router.post('/create', createUser);
+
+router.post('/login', loginUser);
+
+router.post('/refresh-token',refreshTokenUser);
+
+router.get('/get-uers', chackAdminToken,getAllUser); 
+
+router.get('/me', chackUserToken,getMe);
 
 module.exports = router;

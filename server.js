@@ -8,8 +8,8 @@ dotenv.config();
 const app = express();
 
 app.use(express.json());
-app.use(require('cors')());
-connectDB()
+connectDB();
+
 app.use('/api',appRoutes)
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

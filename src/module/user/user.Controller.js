@@ -1,44 +1,59 @@
-const User = require('./User.model');
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcrypt');
-const { ACCESS_TOKEN_EXPIRES_IN,JWT_SECRET,REFRESH_TOKEN_EXPIRES_IN } = require('../../config/envConfig');
+const {
+  createUserService,
+  loginUserService,
+  getAllUserService,
+  getUserByIdService,
+  refreshTokenService
+}= require('./user.service');
 
-// REGISTER
-exports.register = async (req, res) => {
-  try {
-    const { username, password, role } = req.body;
-    const user = await User.create({ username, password, role });
-    res.status(201).json({ user });
-  } catch (err) {
-    res.status(400).json({ error: err.message });
+exports.createUser = async (req,res)=>{
+  try{
+    const user = await createUserService(req.body);
+    res.status(201).json(user);
+  } catch(err){
+    res.status(500).json({message: err,message})
   }
 };
 
-// LOGIN
-exports.login = async (req, res) => {
-  const { username, password } = req.body;
+exports.loginUser = async (req,res)=>{
+  try{
+    const{accessToken,refreshToken,user} = await loginUserService(req.body);
+    res.status(200).json({
+      massage:'login successful',
+      accessToken,
+      refreshToken,
+      user:{id:user._id}
+    });
+  }catch(err){
+    res.status(400).json({message:err.message})
+  }
+};
 
-    const user = await User.findOne({ username });
-    if (!user) return res.status(404).json({ error: 'User not found' });
 
-    const valid = await bcrypt.compare(password, user.password);
-    if (!valid) return res.status(400).json({ error: 'Invalid password' });
+exports.getAllUser = async (req,res)=>{
+  try{
+    const users = await getAllUserService();
+    res.status(200).json(users);
+  }catch(err){
+    res.status(500).json({message:err.message});
+  }
+};
 
-    const accessToken = jwt.sign(
-      { id: user._id, username: user.username, role: user.role },
-      JWT_SECRET,
-      { expiresIn: ACCESS_TOKEN_EXPIRES_IN }
-    );
-    const refreshToken = jwt.sign(
-    { userId: user._id },
-    JWT_SECRET,
-    { expiresIn: REFRESH_TOKEN_EXPIRES_IN }
-    )
-    user.refreshToken = refreshToken;
-    await user.save()
-    res.json({ accessToken,refreshToken });
-}
+exports.getMe = async (req,res)=>{
+  try{
+    const user = await getUserByIdService(req.params.id)
+    if (!user) return res.status(404).json({message: "User not found" });
+    res.status(200).json(user);
+  }catch(err){
+    res.status(500).json({message:err.message})
+  }
+};
 
-exports.getAllUser = async () => {
-  return await User.find();
+exports.refreshTokenUser = async(req,res)=>{
+  try {
+    const newAccessToken =await refreshTokenService(req.body.refreshToken);
+    res.status(200).json({accessToken:newAccessToken})
+  } catch (err) {
+    res.status(500).json({message: err.message});
+  }
 };
